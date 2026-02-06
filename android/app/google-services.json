@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "711565955650",
+    "project_id": "spography-trivial",
+    "storage_bucket": "spography-trivial.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711565955650:android:c4ed47a59f89eb2f3093db",
+        "android_client_info": {
+          "package_name": "com.example.spography_trivial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqjTp-lgV_n-CQKQMJaZp0ayjcBfqygKY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
