@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'map_screen.dart';
 
 // Esta pantalla contiene el login del usuario: Pide el usuario o email y la contraseña. Si es incorrecto salta un error
@@ -14,10 +15,10 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controladores para leer lo que escribe el usuario
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
-  
+
   bool _isLoading = false; // Para el efecto de carga en el botón
 
-  // Función de Login (Ficticio por ahora)
+  // Función de Login (Conectada a Firebase)
   void _login() async {
     // Escondemos el teclado
     FocusScope.of(context).unfocus();
@@ -26,16 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    // Simulamos un tiempo de espera de red (1.5 segundos)
-    await Future.delayed(const Duration(milliseconds: 1500));
-
     final user = _userController.text.trim();
     final pass = _passController.text.trim();
 
     // --- LÓGICA DE VALIDACIÓN ---
-    // Aceptamos 'usuario' o el correo fferban041@g.educaand.es
-    if ((user == 'usuario' || user == 'fferban041@g.educaand.es') && pass == 'usuario') {
-      
+    try {
+      // Intentamos loguear en Firebase con los datos introducidos
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: user,
+        password: pass,
+      );
+
       // Si es correcto navegamos al Mapa
       if (mounted) {
         Navigator.pushReplacement(
@@ -43,13 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const MapScreen()),
         );
       }
-    } else {
+    } on FirebaseAuthException catch (e) {
       // Si es incorrecto --> ERROR
+      // Determinamos el mensaje según el error de Firebase
+      String mensajeError = "Credenciales incorrectas";
+      if (e.code == 'user-not-found') mensajeError = "No existe este usuario";
+      if (e.code == 'wrong-password') mensajeError = "Contraseña incorrecta";
+      if (e.code == 'invalid-email') mensajeError = "El email no es válido";
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              "Credenciales incorrectas",
+              mensajeError,
               style: GoogleFonts.roboto(color: Colors.white),
             ),
             backgroundColor: Colors.redAccent,
@@ -91,21 +99,25 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               Text(
                 "Inicia sesión para explorar el mundo.",
-                style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: GoogleFonts.roboto(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 50),
 
               // ---- 2. INPUT DEL USUARIO ----
-              Text("Usuario o Email", style: GoogleFonts.roboto(color: primaryBlue, fontWeight: FontWeight.bold)),
+              Text(
+                "Usuario o Email",
+                style: GoogleFonts.roboto(
+                  color: primaryBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _userController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: "Ej. usuario",
+                  hintText:
+                      "Ej. usuario@prueba.com", // Pequeño cambio para recordar formato email
                   filled: true,
                   fillColor: cardColor,
                   border: OutlineInputBorder(
@@ -116,13 +128,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: primaryBlue, width: 2),
                   ),
-                  prefixIcon: const Icon(Icons.person_outline, color: Colors.grey),
+                  prefixIcon: const Icon(
+                    Icons.person_outline,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
 
               // --- 3. INPUT CONTRASEÑA ---
-              Text("Contraseña", style: GoogleFonts.roboto(color: Colors.grey, fontWeight: FontWeight.bold)),
+              Text(
+                "Contraseña",
+                style: GoogleFonts.roboto(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _passController,
@@ -140,10 +161,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white, width: 1),
                   ),
-                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
 
               // --- 4. BOTÓN DE LOGIN ---
@@ -164,7 +188,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : Text(
                           "ENTRAR",
