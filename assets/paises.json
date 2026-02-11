@@ -1,0 +1,32 @@
+[
+  {
+    "nombre": "España",
+    "capital": "Madrid",
+    "emoji": "🇪🇸",
+    "dato": "Ganó el mundial en 2010"
+  },
+  {
+    "nombre": "Francia",
+    "capital": "París",
+    "emoji": "🇫🇷",
+    "dato": "Tiene 2 mundiales"
+  },
+  {
+    "nombre": "Argentina",
+    "capital": "Buenos Aires",
+    "emoji": "🇦🇷",
+    "dato": "Campeona en 2022"
+  },
+  {
+    "nombre": "Brasil",
+    "capital": "Brasilia",
+    "emoji": "🇧🇷",
+    "dato": "Tiene 5 mundiales"
+  },
+  {
+    "nombre": "Japón",
+    "capital": "Tokio",
+    "emoji": "🇯🇵",
+    "dato": "Organizó el mundial 2002"
+  }
+]

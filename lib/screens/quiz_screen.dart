@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // NECESARIO: Para conectar con la BD
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Esta pantalla sera el quiz de preguntas. Al final se mostraran los puntos totales ganados.
 class QuizScreen extends StatefulWidget {
@@ -14,7 +15,25 @@ class _QuizScreenState extends State<QuizScreen> {
   // --- VARIABLES DEL JUEGO ---
   int _index = 0; 
   int _score = 0;         
-  bool _bloqueado = false; 
+  bool _bloqueado = false;
+
+  void _guardarPuntuacion() async {
+    // Guardamos la memoria en local con SharedPreferences)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('puntos_guardados', _score); // Guardamos la nota con la clave 'puntos_guardados'
+
+    // Guardamos en la base de datos (Firestore)
+    // Usamos el email del usuario o "user" si no hay
+    String usuario = "user";
+    
+    await FirebaseFirestore.instance.collection('puntuaciones').add({
+      'puntos': _score,
+      'fecha': DateTime.now().toString(),
+      'usuario': usuario,
+    });
+
+    debugPrint("✅ Puntuación guardada en Memoria y Nube");
+  }
 
   // --- LÓGICA: PROCESAR RESPUESTA ---
   void _responder(String elegida, String correcta, int total) async {
@@ -31,7 +50,18 @@ class _QuizScreenState extends State<QuizScreen> {
     ));
 
     await Future.delayed(const Duration(milliseconds: 1200));
-    if (mounted) setState(() { _index++; _bloqueado = false; });
+    
+    if (mounted) {
+      setState(() { 
+        _index++; 
+        _bloqueado = false; 
+      });
+
+      // Si hemos llegado al final, guardamos
+      if (_index >= total) {
+        _guardarPuntuacion();
+      }
+    }
   }
 
   @override

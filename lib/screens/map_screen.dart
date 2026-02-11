@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
 
 // --- IMPORTAMOS LAS PANTALLAS ---
 import 'quiz_screen.dart';
@@ -141,23 +142,73 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-// --- PANTALLA MAPA (CONTENIDO VACÍO) ---
+// ---- PANTALLA MAPA ----
 class _MapContent extends StatelessWidget {
   const _MapContent();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0D2644), // Fondo Azul oscuro
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.public, size: 150, color: const Color(0xFF3E5641).withValues(alpha: 0.8)),
-            const SizedBox(height: 20),
-            Text("Mapa Interactivo", style: GoogleFonts.montserrat(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-          ],
-        ),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D2644),
+      appBar: AppBar(
+        title: const Text("Explorar Países (JSON)", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      body: FutureBuilder(
+        // Pedimos el archivo JSON que está guardado en assets
+        future: DefaultAssetBundle.of(context).loadString('assets/paises.json'),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // Desciframos el JSON. Convertimos el texto en una lista)
+          var countries = json.decode(snapshot.data.toString());
+
+          // Aquí creamos el diseño de la lista
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: countries.length,
+            itemBuilder: (context, index) {
+              var country = countries[index];
+              return Card(
+                color: const Color(0xFF1E1E1E),
+                margin: const EdgeInsets.only(bottom: 10),
+                child: ListTile(
+                  leading: Text(country['emoji'], style: const TextStyle(fontSize: 30)),
+                  title: Text(
+                    country['nombre'], 
+                    style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.bold)
+                  ),
+                  subtitle: Text(
+                    "Capital: ${country['capital']}", 
+                    style: const TextStyle(color: Colors.grey)
+                  ),
+                  trailing: const Icon(Icons.info_outline, color: Color(0xFF2196F3)),
+                  onTap: () {
+                    // Al pulsar sobre el país mostramos el dato curioso
+                    showDialog(
+                      context: context, 
+                      builder: (_) => AlertDialog(
+                        backgroundColor: const Color(0xFF1E1E1E),
+                        title: Text(country['nombre'], style: const TextStyle(color: Colors.white)),
+                        content: Text(country['dato'], style: const TextStyle(color: Colors.white)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context), 
+                            child: const Text("Cerrar")
+                          )
+                        ],
+                      )
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
